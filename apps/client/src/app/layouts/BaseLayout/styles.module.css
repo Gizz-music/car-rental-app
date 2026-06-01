@@ -1,0 +1,8 @@
+.page_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: calc(100vh - 85px);
+  box-sizing: border-box;
+}
