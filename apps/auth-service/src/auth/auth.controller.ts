@@ -62,9 +62,9 @@ export class AuthController {
     return { success: true };
   }
 
-  // GET /auth/me — защищённый эндпоинт, возвращает текущего пользователя
+  // GET /auth/current-user — защищённый эндпоинт, возвращает текущего пользователя
   @UseGuards(JwtAuthGuard)
-  @Get('me')
+  @Get('current-user')
   me(@Req() req: Request) {
     // JwtStrategy кладёт объект пользователя в req.user
     return req['user'];

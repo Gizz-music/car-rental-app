@@ -24,6 +24,14 @@ export class Users {
   @Column()
   passwordHash: string;
 
+  // Массив ролей. По умолчанию каждому новому юзеру даем роль 'client'
+  @Column({
+    type: 'text',
+    array: true,
+    default: '{client}',
+  })
+  roles: string[];
+
   // Дата создания (заполняется автоматически при INSERT)
   @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
   createdAt: Date;

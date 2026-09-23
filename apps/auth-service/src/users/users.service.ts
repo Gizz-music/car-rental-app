@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 import { Users } from './entity/users.entity';
 
 @Injectable()
@@ -22,11 +22,7 @@ export class UsersService {
   }
 
   // Создание пользователя с уже подсчитанным passwordHash
-  async createUser(data: {
-    email: string;
-    name: string;
-    passwordHash: string;
-  }) {
+  async createUser(data: DeepPartial<Users>) {
     const user = this.usersRepository.create(data);
     return this.usersRepository.save(user);
   }

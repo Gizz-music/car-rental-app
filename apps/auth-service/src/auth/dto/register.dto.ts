@@ -1,4 +1,10 @@
-import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
+import {
+  IsArray,
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  MinLength,
+} from 'class-validator';
 
 export class RegisterDto {
   // Требуем непустое имя
@@ -10,6 +16,10 @@ export class RegisterDto {
   email: string;
 
   // Минимальная длина пароля
-  @MinLength(6)
+  @MinLength(7)
   password: string;
+
+  @IsOptional()
+  @IsArray()
+  roles: string[];
 }

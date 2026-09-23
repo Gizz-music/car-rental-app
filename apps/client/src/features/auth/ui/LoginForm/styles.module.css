@@ -1,0 +1,20 @@
+.textField {
+  padding-top: 15px;
+}
+
+.button {
+  width: 125px;
+  margin: 30px 15px 30px;
+  background-color: #6b95b7;
+}
+
+.registrationButton {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 200px;
+  height: 30px;
+  margin: 0 15px 30px;
+  color: #6a94b6;
+  background-color: #dddddc;
+}

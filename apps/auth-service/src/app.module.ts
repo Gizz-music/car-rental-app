@@ -6,9 +6,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
+    AuthModule, // эндпоинты /auth/*
     UsersModule, // работа с сущностью пользователя
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({

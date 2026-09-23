@@ -34,10 +34,11 @@ export class AuthService {
       email: dto.email,
       name: dto.name,
       passwordHash,
+      roles: dto.roles,
     });
 
     // Возвращаем «обрезанный» payload без hash
-    return this.buildUserPayload(user.id, user.email, user.name);
+    return this.buildUserPayload(user.id, user.email, user.name, user.roles);
   }
 
   // Логин пользователя
@@ -55,7 +56,7 @@ export class AuthService {
     }
 
     // Возвращаем безопасный payload
-    return this.buildUserPayload(user.id, user.email, user.name);
+    return this.buildUserPayload(user.id, user.email, user.name, user.roles);
   }
 
   // Валидация пользователя по id (используется стратегией JWT)
@@ -65,7 +66,7 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    return this.buildUserPayload(user.id, user.email, user.name);
+    return this.buildUserPayload(user.id, user.email, user.name, user.roles);
   }
 
   // Создание access-токена по payload
@@ -74,7 +75,12 @@ export class AuthService {
   }
 
   // Утилита для нормализации объекта пользователя, который возвращаем на клиент
-  private buildUserPayload(id: number, email: string, name: string) {
-    return { id, email, name };
+  private buildUserPayload(
+    id: number,
+    email: string,
+    name: string,
+    roles: string[],
+  ) {
+    return { id, email, name, roles }; // JSON ответа
   }
 }
