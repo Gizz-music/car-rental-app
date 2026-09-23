@@ -9,7 +9,7 @@ import { useRegisterMutation } from "@/features/auth/api/authApi";
 import { isValidEmail, isValidPassword } from "@/features/auth/lib/validation";
 import { Form } from "@/shared/components/Form";
 
-import styles from "./styles.module.css";
+import styles from "../authForm.module.css";
 
 export const RegistrationForm = () => {
   const navigate = useNavigate();
@@ -72,20 +72,22 @@ export const RegistrationForm = () => {
           {error}
         </Text>
       )}
-      <Button
-        view="primary"
-        label="REGISTER"
-        loading={isLoading}
-        onClick={handleSubmit}
-        className={styles.button}
-        disabled={!isNameValid || !isEmailValid || !isPasswordValid}
-      />
-      <Button
-        label="CANCEL"
-        view="primary"
-        className={styles.button}
-        onClick={() => navigate("/")}
-      />
+      <div className={styles.actions}>
+        <Button
+          view="primary"
+          label="REGISTER"
+          loading={isLoading}
+          onClick={handleSubmit}
+          className={styles.button}
+          disabled={!isNameValid || !isEmailValid || !isPasswordValid}
+        />
+        <Button
+          label="CANCEL"
+          view="primary"
+          className={styles.button}
+          onClick={() => navigate("/")}
+        />
+      </div>
     </Form>
   );
 };

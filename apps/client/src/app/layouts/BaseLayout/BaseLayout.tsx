@@ -7,5 +7,5 @@ interface BaseLayoutProps {
 }
 
 export const BaseLayout = ({ children }: BaseLayoutProps) => {
-  return <div className={styles.page_container}>{children}</div>;
+  return <div className={styles.pageContainer}>{children}</div>;
 };

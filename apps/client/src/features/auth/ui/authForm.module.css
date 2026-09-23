@@ -1,0 +1,41 @@
+.textField {
+  width: 100%;
+  padding-top: 15px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px 30px;
+  margin: 30px 0;
+}
+
+.button {
+  --button-bg-color: var(--primary-light);
+  flex: 1 1 125px;
+  max-width: 160px;
+}
+
+.registrationButton {
+  --button-height: 30px;
+  --button-color: #6a94b6;
+  --button-bg-color: #dddddc;
+  width: 200px;
+  margin-bottom: 30px;
+}
+
+@media (max-width: 600px) {
+  .actions {
+    gap: 12px;
+    margin: 20px 0;
+  }
+
+  .button {
+    max-width: none;
+  }
+
+  .registrationButton {
+    margin-bottom: 20px;
+  }
+}

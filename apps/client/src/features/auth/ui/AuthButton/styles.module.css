@@ -1,10 +1,14 @@
 .button {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-right: 15px;
-  height: 35px;
+  --button-height: 35px;
+  --button-bg-color: var(--primary);
   width: 130px;
-  background-color: #3a76a9;
   border-radius: 8px;
+}
+
+@media (max-width: 600px) {
+  .button {
+    --button-height: 32px;
+    --button-font-size: 14px;
+    width: 96px;
+  }
 }

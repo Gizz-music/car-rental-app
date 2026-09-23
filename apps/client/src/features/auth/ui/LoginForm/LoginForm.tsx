@@ -9,7 +9,7 @@ import { useLoginMutation } from "@/features/auth/api/authApi";
 import { isValidEmail, isValidPassword } from "@/features/auth/lib/validation";
 import { Form } from "@/shared/components/Form";
 
-import styles from "./styles.module.css";
+import styles from "../authForm.module.css";
 
 export const LoginForm = () => {
   const navigate = useNavigate();
@@ -61,20 +61,22 @@ export const LoginForm = () => {
           {error}
         </Text>
       )}
-      <Button
-        label="LOGIN"
-        view="primary"
-        loading={isLoading}
-        onClick={handleSubmit}
-        className={styles.button}
-        disabled={!isEmailValid || !isPasswordValid}
-      />
-      <Button
-        label="CANCEL"
-        view="primary"
-        className={styles.button}
-        onClick={() => navigate("/")}
-      />
+      <div className={styles.actions}>
+        <Button
+          label="LOGIN"
+          view="primary"
+          loading={isLoading}
+          onClick={handleSubmit}
+          className={styles.button}
+          disabled={!isEmailValid || !isPasswordValid}
+        />
+        <Button
+          label="CANCEL"
+          view="primary"
+          className={styles.button}
+          onClick={() => navigate("/")}
+        />
+      </div>
       <Button
         size="s"
         view="clear"

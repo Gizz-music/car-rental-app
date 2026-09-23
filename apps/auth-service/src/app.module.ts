@@ -21,7 +21,7 @@ import { AuthModule } from './auth/auth.module';
         process.env.DATABASE_URL ||
         'postgres://postgres:postgres@localhost:5432/car_rental_auth',
       autoLoadEntities: true,
-      synchronize: true, // На Render это создаст таблицу "producers" автоматически при первом запуске
+      synchronize: true, // На Render это создаст таблицу "users" автоматически при первом запуске
 
       // ВАЖНО для Render: база требует зашифрованное соединение (SSL)
       ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,

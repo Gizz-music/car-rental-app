@@ -5,26 +5,26 @@ import CommunicationIcon from "@/assets/icons/communication.svg";
 
 import styles from "./styles.module.css";
 
+interface HomeCard {
+  icon: string;
+  title: string;
+}
+
+const CARDS: HomeCard[] = [
+  { icon: AutoIcon, title: "Auto" },
+  { icon: IncomeIcon, title: "Income" },
+  { icon: RepairIcon, title: "Repair" },
+  { icon: CommunicationIcon, title: "Communication" },
+];
+
 export const HomePage = () => {
   return (
     <div className={styles.container}>
-      <div className={styles.card}>
-        <img src={AutoIcon} alt="Auto" width="150" height="150" />
-      </div>
-      <div className={styles.card}>
-        <img src={IncomeIcon} alt="Income" width="150" height="150" />
-      </div>
-      <div className={styles.card}>
-        <img src={RepairIcon} alt="Repair" width="150" height="150" />
-      </div>
-      <div className={styles.card}>
-        <img
-          src={CommunicationIcon}
-          alt="Communication"
-          width="150"
-          height="150"
-        />
-      </div>
+      {CARDS.map(({ icon, title }) => (
+        <div key={title} className={styles.card}>
+          <img src={icon} alt={title} className={styles.icon} />
+        </div>
+      ))}
     </div>
   );
 };

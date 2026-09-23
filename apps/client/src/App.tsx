@@ -5,7 +5,7 @@ import { useCurrentUserQuery } from "@/features/auth/api/authApi";
 import { AppRouter } from "@/app/providers";
 import { Header } from "@/widgets/header";
 
-import "./App.css";
+import styles from "./App.module.css";
 
 export const App = () => {
   const { isLoading } = useCurrentUserQuery();
@@ -15,7 +15,7 @@ export const App = () => {
   }
 
   return (
-    <Theme preset={presetGpnDefault}>
+    <Theme preset={presetGpnDefault} className={styles.app}>
       <Header />
       <AppRouter />
     </Theme>

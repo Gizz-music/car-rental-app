@@ -1,8 +1,15 @@
 .formContainer {
-  width: 400px;
+  width: min(400px, 100%);
   min-height: 300px;
   padding: 20px 15px 0;
-  background-color: #e3e2e5;
+  background-color: var(--surface);
   border-radius: 5px;
-  box-shadow: 0 0 11px 3px rgb(59, 72, 82);
+  box-shadow: var(--shadow);
+}
+
+@media (max-width: 600px) {
+  .formContainer {
+    min-height: auto;
+    padding: 16px 12px 0;
+  }
 }
