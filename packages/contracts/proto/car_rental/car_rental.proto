@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package car_rental;
+
+// Dates are ISO calendar dates "YYYY-MM-DD" (UTC).
+// A booking occupies the half-open range [start_date, end_date):
+// the car is free again on end_date.
+
+service CarsService {
+  // Without dates, availability is calculated for today.
+  rpc ListCars(ListCarsRequest) returns (ListCarsResponse);
+}
+
+service BookingsService {
+  rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
+  rpc ListUserBookings(ListUserBookingsRequest) returns (ListUserBookingsResponse);
+  rpc CancelBooking(CancelBookingRequest) returns (CancelBookingResponse);
+}
+
+message Car {
+  int32 id = 1;
+  string brand = 2;
+  string model = 3;
+  int32 year = 4;
+  string transmission = 5;
+  string fuel_type = 6;
+  int32 seats = 7;
+  int32 price_per_day = 8;
+  string image_url = 9;
+}
+
+message CarListItem {
+  Car car = 1;
+  bool available = 2;
+}
+
+message ListCarsRequest {
+  string start_date = 1;
+  string end_date = 2;
+}
+
+message ListCarsResponse {
+  repeated CarListItem cars = 1;
+}
+
+// Identity of the authenticated user, filled in by the Gateway from the JWT.
+message Customer {
+  int32 id = 1;
+  string email = 2;
+  string name = 3;
+}
+
+message Booking {
+  int32 id = 1;
+  Car car = 2;
+  string start_date = 3;
+  string end_date = 4;
+  string status = 5;
+  int32 total_price = 6;
+  string created_at = 7;
+}
+
+message CreateBookingRequest {
+  int32 car_id = 1;
+  string start_date = 2;
+  string end_date = 3;
+  Customer customer = 4;
+}
+
+message CreateBookingResponse {
+  Booking booking = 1;
+}
+
+message ListUserBookingsRequest {
+  int32 user_id = 1;
+}
+
+message ListUserBookingsResponse {
+  repeated Booking bookings = 1;
+}
+
+message CancelBookingRequest {
+  int32 booking_id = 1;
+  int32 user_id = 2;
+}
+
+message CancelBookingResponse {
+  Booking booking = 1;
+}

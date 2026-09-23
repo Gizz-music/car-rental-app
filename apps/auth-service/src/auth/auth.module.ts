@@ -1,21 +1,28 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
+import { ConfigService } from '@nestjs/config';
+import { JwtModule, JwtSignOptions } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { JwtStrategy } from './jwt.strategy';
 import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     UsersModule,
-    PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'dev_secret_key',
-      signOptions: { expiresIn: '7d' }, // срок жизни access-токена
+    // Без секрета сервис не стартует: подставлять значение по умолчанию небезопасно
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.getOrThrow<string>('JWT_ACCESS_SECRET'),
+        signOptions: {
+          expiresIn:
+            config.getOrThrow<JwtSignOptions['expiresIn']>(
+              'JWT_ACCESS_EXPIRES',
+            ),
+        },
+      }),
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService],
 })
 export class AuthModule {}

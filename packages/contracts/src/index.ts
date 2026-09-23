@@ -1,6 +1,6 @@
-import { join } from 'node:path';
-
 export * as auth from './generated/auth/auth';
-
-export const PROTO_ROOT = join(__dirname, '..', 'proto');
-export const AUTH_PROTO_PATH = join(PROTO_ROOT, 'auth', 'auth.proto');
+export * as carRental from './generated/car_rental/car_rental';
+export * from './events';
+export * from './grpc';
+export * from './jwt';
+export * from './rmq';

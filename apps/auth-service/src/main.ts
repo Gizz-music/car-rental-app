@@ -1,23 +1,22 @@
 import { NestFactory } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
+import { AsyncMicroserviceOptions, Transport } from '@nestjs/microservices';
+import { authGrpcOptions } from '@car-rental/contracts';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
-import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // Сервис доступен только по gRPC: HTTP, cookie и CORS живут в api-gateway
+  const app = await NestFactory.createMicroservice<AsyncMicroserviceOptions>(
+    AppModule,
+    {
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        transport: Transport.GRPC,
+        options: authGrpcOptions(config.getOrThrow<string>('GRPC_URL')),
+      }),
+    },
+  );
 
-  // Подключаем парсер куки, чтобы стратегия JWT могла читать access_token из req.cookies
-  app.use(cookieParser());
-
-  // Разрешаем фронтенду на 5173 ходить с куками (credentials: true)
-  app.enableCors({
-    origin: ['http://localhost:5173'],
-    credentials: true,
-  });
-
-  // Включаем глобальную валидацию DTO
-  app.useGlobalPipes(new ValidationPipe());
-
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen();
 }
-bootstrap();
+void bootstrap();

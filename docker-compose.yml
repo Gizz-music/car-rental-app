@@ -35,6 +35,17 @@ services:
       timeout: 10s
       retries: 10
 
+  # SMTP-ловушка для разработки: письма не уходят наружу, смотреть их в веб-интерфейсе
+  mailpit:
+    image: axllent/mailpit:v1.31
+    restart: unless-stopped
+    environment:
+      # Без этого Mailpit ждёт reverse DNS клиента, и каждое письмо задерживается на ~8 с
+      MP_SMTP_DISABLE_RDNS: "true"
+    ports:
+      - "${SMTP_PORT:-1025}:1025"
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+
 volumes:
   postgres-data:
   rabbitmq-data:

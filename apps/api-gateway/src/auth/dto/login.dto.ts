@@ -1,6 +1,7 @@
 import { IsEmail, IsNotEmpty } from 'class-validator';
+import type { auth } from '@car-rental/contracts';
 
-export class LoginDto {
+export class LoginDto implements auth.LoginRequest {
   @IsEmail()
   email: string;
 

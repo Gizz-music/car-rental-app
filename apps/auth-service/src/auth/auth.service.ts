@@ -1,13 +1,11 @@
-import {
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { RpcException } from '@nestjs/microservices';
+import { status } from '@grpc/grpc-js';
+import * as bcrypt from 'bcrypt';
+import { auth, JwtPayload } from '@car-rental/contracts';
 import { UsersService } from '../users/users.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
+import { Users } from '../users/entity/users.entity';
 
 @Injectable()
 export class AuthService {
@@ -18,69 +16,78 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  // Регистрация нового пользователя
-  async register(dto: RegisterDto) {
-    // Проверяем, что email ещё не занят
-    const existing = await this.usersService.findByEmail(dto.email);
+  // Регистрация нового пользователя (роли назначаются по умолчанию в БД)
+  async register({
+    name,
+    email,
+    password,
+  }: auth.RegisterRequest): Promise<auth.RegisterResponse> {
+    const existing = await this.usersService.findByEmail(email);
     if (existing) {
-      throw new ConflictException('User with this email already exists');
+      throw new RpcException({
+        code: status.ALREADY_EXISTS,
+        message: 'User with this email already exists',
+      });
     }
 
     // Хэшируем пароль (bcrypt с солью по умолчанию)
-    const passwordHash = await bcrypt.hash(dto.password, 10);
-
-    // Создаём пользователя в БД
+    const passwordHash = await bcrypt.hash(password, 10);
     const user = await this.usersService.createUser({
-      email: dto.email,
-      name: dto.name,
+      email,
+      name,
       passwordHash,
-      roles: dto.roles,
     });
 
-    // Возвращаем «обрезанный» payload без hash
-    return this.buildUserPayload(user.id, user.email, user.name, user.roles);
+    return this.buildAuthResponse(user);
   }
 
-  // Логин пользователя
-  async login(dto: LoginDto) {
-    // Ищем пользователя по email
-    const user = await this.usersService.findByEmail(dto.email);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+  // Вход по email и паролю
+  async login({
+    email,
+    password,
+  }: auth.LoginRequest): Promise<auth.LoginResponse> {
+    const user = await this.usersService.findByEmail(email);
+    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+      throw new RpcException({
+        code: status.UNAUTHENTICATED,
+        message: 'Invalid credentials',
+      });
     }
 
-    // Сравниваем пароль с hash
-    const isValid = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!isValid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    // Возвращаем безопасный payload
-    return this.buildUserPayload(user.id, user.email, user.name, user.roles);
+    return this.buildAuthResponse(user);
   }
 
-  // Валидация пользователя по id (используется стратегией JWT)
-  async validateUserById(id: number) {
+  async getUserById({
+    id,
+  }: auth.GetUserByIdRequest): Promise<auth.GetUserByIdResponse> {
     const user = await this.usersService.findById(id);
     if (!user) {
-      throw new UnauthorizedException();
+      throw new RpcException({
+        code: status.NOT_FOUND,
+        message: 'User not found',
+      });
     }
 
-    return this.buildUserPayload(user.id, user.email, user.name, user.roles);
+    return { user: this.toUser(user) };
   }
 
-  // Создание access-токена по payload
-  createAccessToken(payload: { sub: number; email: string; name: string }) {
-    return this.jwtService.sign(payload);
+  // Пользователь + подписанный access-токен (проверяет его api-gateway)
+  private buildAuthResponse(user: Users) {
+    const payload: JwtPayload = {
+      sub: user.id,
+      email: user.email,
+      name: user.name,
+      roles: user.roles,
+    };
+
+    return {
+      user: this.toUser(user),
+      accessToken: this.jwtService.sign(payload),
+    };
   }
 
-  // Утилита для нормализации объекта пользователя, который возвращаем на клиент
-  private buildUserPayload(
-    id: number,
-    email: string,
-    name: string,
-    roles: string[],
-  ) {
-    return { id, email, name, roles }; // JSON ответа
+  // Наружу отдаём только публичные поля, без passwordHash
+  private toUser({ id, email, name, roles }: Users): auth.User {
+    return { id, email, name, roles };
   }
 }
