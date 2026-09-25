@@ -1,0 +1,30 @@
+.modal {
+  width: min(440px, calc(100vw - 32px));
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  text-align: left;
+}
+
+.period {
+  width: 100%;
+}
+
+.dropdown {
+  z-index: 10000;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.reserve {
+  --button-bg-color: var(--primary);
+  border-radius: 8px;
+}

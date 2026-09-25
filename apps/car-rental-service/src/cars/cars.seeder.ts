@@ -12,6 +12,7 @@ const SEED_CARS: DeepPartial<Car>[] = [
     fuelType: 'petrol',
     seats: 5,
     pricePerDay: 2500,
+    imageUrl: '/cars/kia-rio.jpg',
   },
   {
     brand: 'Hyundai',
@@ -21,6 +22,7 @@ const SEED_CARS: DeepPartial<Car>[] = [
     fuelType: 'petrol',
     seats: 5,
     pricePerDay: 3000,
+    imageUrl: '/cars/hyundai-solaris.jpg',
   },
   {
     brand: 'Volkswagen',
@@ -30,6 +32,7 @@ const SEED_CARS: DeepPartial<Car>[] = [
     fuelType: 'petrol',
     seats: 5,
     pricePerDay: 2300,
+    imageUrl: '/cars/volkswagen-polo.jpg',
   },
   {
     brand: 'Skoda',
@@ -39,6 +42,7 @@ const SEED_CARS: DeepPartial<Car>[] = [
     fuelType: 'petrol',
     seats: 5,
     pricePerDay: 3800,
+    imageUrl: '/cars/skoda-octavia.jpg',
   },
   {
     brand: 'Toyota',
@@ -48,6 +52,7 @@ const SEED_CARS: DeepPartial<Car>[] = [
     fuelType: 'hybrid',
     seats: 5,
     pricePerDay: 4500,
+    imageUrl: '/cars/toyota-camry.jpg',
   },
   {
     brand: 'Tesla',
@@ -57,6 +62,7 @@ const SEED_CARS: DeepPartial<Car>[] = [
     fuelType: 'electric',
     seats: 5,
     pricePerDay: 9000,
+    imageUrl: '/cars/tesla-model-3.jpg',
   },
   {
     brand: 'BMW',
@@ -66,6 +72,7 @@ const SEED_CARS: DeepPartial<Car>[] = [
     fuelType: 'diesel',
     seats: 5,
     pricePerDay: 12000,
+    imageUrl: '/cars/bmw-x5.jpg',
   },
   {
     brand: 'Mercedes-Benz',
@@ -75,8 +82,13 @@ const SEED_CARS: DeepPartial<Car>[] = [
     fuelType: 'diesel',
     seats: 7,
     pricePerDay: 11000,
+    imageUrl: '/cars/mercedes-v-class.jpg',
   },
 ];
+
+const imageByModel = new Map(
+  SEED_CARS.map((car) => [`${car.brand} ${car.model}`, car.imageUrl ?? '']),
+);
 
 // Заполняет пустую таблицу тестовыми авто при старте (для разработки)
 @Injectable()
@@ -89,10 +101,29 @@ export class CarsSeeder implements OnApplicationBootstrap {
 
   async onApplicationBootstrap() {
     if (await this.carsRepository.count()) {
+      await this.backfillImages();
       return;
     }
 
     await this.carsRepository.save(SEED_CARS);
     this.logger.log(`Seeded ${SEED_CARS.length} cars`);
+  }
+
+  // Уже созданные авто могли остаться без фото: колонка image_url появилась раньше сида
+  private async backfillImages() {
+    const cars = await this.carsRepository.find();
+    const pending = cars.filter((car) => !car.imageUrl);
+
+    for (const car of pending) {
+      car.imageUrl = imageByModel.get(`${car.brand} ${car.model}`) ?? '';
+    }
+
+    const withImages = pending.filter((car) => car.imageUrl);
+    if (!withImages.length) {
+      return;
+    }
+
+    await this.carsRepository.save(withImages);
+    this.logger.log(`Added photos for ${withImages.length} cars`);
   }
 }

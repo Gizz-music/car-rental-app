@@ -1,9 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, LessThan, MoreThan, Repository } from 'typeorm';
+import { DataSource, In, LessThan, MoreThan, Repository } from 'typeorm';
 import type { carRental } from '@car-rental/contracts';
 import { Car } from '../cars/entity/car.entity';
-import { DateRange, parseDateRange, today } from '../common/date-range';
+import {
+  addDays,
+  DateRange,
+  daysBetween,
+  parseDateRange,
+  today,
+} from '../common/date-range';
 import {
   failedPrecondition,
   invalidArgument,
@@ -12,6 +18,27 @@ import {
 import { Booking, BookingStatus } from './entity/booking.entity';
 import { BookingEventsPublisher } from './booking-events.publisher';
 import { toBooking } from './booking.mapper';
+
+// Конец непрерывной занятости, если она пересекает период. Иначе авто свободно.
+const contiguousReleaseDate = (
+  bookings: { startDate: string; endDate: string }[],
+  range: DateRange,
+): string | null => {
+  const overlapping = bookings.find(
+    (booking) => booking.startDate < range.end && booking.endDate > range.start,
+  );
+  if (!overlapping) {
+    return null;
+  }
+
+  let until = overlapping.endDate;
+  for (const booking of bookings) {
+    if (booking.startDate <= until && booking.endDate > until) {
+      until = booking.endDate;
+    }
+  }
+  return until;
+};
 
 // Активные брони, пересекающиеся с периодом: [a, b) и [c, d) пересекаются, если a < d и b > c
 const activeOverlapping = (range: DateRange) => ({
@@ -29,12 +56,44 @@ export class BookingsService {
     private readonly eventsPublisher: BookingEventsPublisher,
   ) {}
 
-  async findBusyCarIds(range: DateRange): Promise<Set<number>> {
+  // Для занятых авто — дата, когда машина снова свободна.
+  // Склеенные брони (следующая начинается в день окончания предыдущей) считаются одним сроком.
+  async findUnavailableUntil(
+    carIds: number[],
+    range: DateRange,
+  ): Promise<Map<number, string>> {
+    if (!carIds.length) {
+      return new Map();
+    }
+
     const bookings = await this.bookingsRepository.find({
-      select: { carId: true },
-      where: activeOverlapping(range),
+      select: { carId: true, startDate: true, endDate: true },
+      where: {
+        carId: In(carIds),
+        status: BookingStatus.Active,
+        endDate: MoreThan(range.start),
+      },
+      order: { carId: 'ASC', startDate: 'ASC' },
     });
-    return new Set(bookings.map(({ carId }) => carId));
+
+    const byCar = new Map<number, { startDate: string; endDate: string }[]>();
+    for (const { carId, startDate, endDate } of bookings) {
+      const carBookings = byCar.get(carId);
+      if (carBookings) {
+        carBookings.push({ startDate, endDate });
+      } else {
+        byCar.set(carId, [{ startDate, endDate }]);
+      }
+    }
+
+    const unavailableUntil = new Map<number, string>();
+    for (const [carId, carBookings] of byCar) {
+      const releaseDate = contiguousReleaseDate(carBookings, range);
+      if (releaseDate) {
+        unavailableUntil.set(carId, releaseDate);
+      }
+    }
+    return unavailableUntil;
   }
 
   async create({
@@ -93,13 +152,19 @@ export class BookingsService {
     return { bookings: bookings.map(toBooking) };
   }
 
+  // Будущая бронь отменяется целиком. Идущая аренда завершается досрочно:
+  // сегодня — последний оплачиваемый день, авто свободно с завтрашнего дня
   async cancel({
     bookingId,
-    userId,
+    customer,
   }: carRental.CancelBookingRequest): Promise<carRental.CancelBookingResponse> {
+    if (!customer) {
+      throw invalidArgument('Customer is required');
+    }
+
     // Чужая бронь неотличима от несуществующей: не раскрываем чужие id
     const booking = await this.bookingsRepository.findOne({
-      where: { id: bookingId, userId },
+      where: { id: bookingId, userId: customer.id },
       relations: { car: true },
     });
     if (!booking) {
@@ -108,15 +173,36 @@ export class BookingsService {
     if (booking.status === BookingStatus.Cancelled) {
       throw failedPrecondition('Booking is already cancelled');
     }
-    if (booking.startDate <= today()) {
-      throw failedPrecondition(
-        'A booking that has started cannot be cancelled',
-      );
+
+    const now = today();
+    if (booking.endDate <= now) {
+      throw failedPrecondition('A completed booking cannot be cancelled');
     }
 
-    booking.status = BookingStatus.Cancelled;
+    const endedEarly = booking.startDate <= now;
+    if (endedEarly) {
+      this.endEarly(booking, addDays(now, 1));
+    } else {
+      booking.status = BookingStatus.Cancelled;
+    }
     await this.bookingsRepository.save(booking);
 
+    this.eventsPublisher.bookingCancelled(booking, customer, endedEarly);
+
     return { booking: toBooking(booking) };
+  }
+
+  // Цена пересчитывается по ставке из брони, а не по текущему тарифу авто
+  private endEarly(booking: Booking, endDate: string) {
+    if (endDate >= booking.endDate) {
+      throw failedPrecondition('Today is already the last day of this rental');
+    }
+
+    const dailyRate =
+      booking.totalPrice / daysBetween(booking.startDate, booking.endDate);
+    booking.endDate = endDate;
+    booking.totalPrice = Math.round(
+      dailyRate * daysBetween(booking.startDate, endDate),
+    );
   }
 }

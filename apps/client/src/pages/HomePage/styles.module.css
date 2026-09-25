@@ -17,6 +17,8 @@
   align-items: center;
   aspect-ratio: 24 / 25;
   border-radius: 15px;
+  color: inherit;
+  text-decoration: none;
   transition:
     transform 0.3s ease,
     box-shadow 0.3s ease; /* Добавили плавность для тени */
@@ -43,6 +45,11 @@
 }
 
 /* Подъём только на устройствах с мышью: на тач-экранах hover «залипает» */
+.card:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+}
+
 @media (hover: hover) {
   .card:hover {
     transform: translateY(-8px);

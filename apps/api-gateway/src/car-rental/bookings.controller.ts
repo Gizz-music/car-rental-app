@@ -46,7 +46,7 @@ export class BookingsController {
     return bookings;
   }
 
-  // POST /bookings/:id/cancel - отмена своей брони до даты начала
+  // POST /bookings/:id/cancel - отмена будущей брони или досрочное завершение идущей
   @Post(':id/cancel')
   async cancel(
     @Param('id', ParseIntPipe) bookingId: number,
@@ -54,7 +54,7 @@ export class BookingsController {
   ): Promise<carRental.Booking | undefined> {
     const { booking } = await this.carRentalClient.cancelBooking({
       bookingId,
-      userId: user.sub,
+      customer: { id: user.sub, email: user.email, name: user.name },
     });
     return booking;
   }

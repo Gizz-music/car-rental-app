@@ -17,8 +17,9 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // whitelist отбрасывает поля, которых нет в DTO (например, roles)
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  // whitelist отбрасывает поля, которых нет в DTO (например, roles).
+  // transform отдаёт в контроллер DTO с приведёнными типами (page из query — число, а не строка)
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   await app.listen(config.get<number>('PORT', 3000));
 }

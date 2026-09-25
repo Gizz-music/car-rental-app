@@ -32,15 +32,24 @@ message Car {
 message CarListItem {
   Car car = 1;
   bool available = 2;
+  // Date (YYYY-MM-DD) when the car becomes free again.
+  // Empty when the car is available for the requested period.
+  string unavailable_until = 3;
 }
 
 message ListCarsRequest {
   string start_date = 1;
   string end_date = 2;
+  // 1-based page number. Zero means the first page.
+  int32 page = 3;
+  // Zero means the default page size.
+  int32 page_size = 4;
 }
 
 message ListCarsResponse {
   repeated CarListItem cars = 1;
+  // Total number of cars across all pages.
+  int32 total = 2;
 }
 
 // Identity of the authenticated user, filled in by the Gateway from the JWT.
@@ -79,9 +88,13 @@ message ListUserBookingsResponse {
   repeated Booking bookings = 1;
 }
 
+// An upcoming booking is cancelled. A booking in progress ends early:
+// today is the last paid day, end_date and total_price are recalculated.
 message CancelBookingRequest {
+  reserved 2;
+  reserved "user_id";
   int32 booking_id = 1;
-  int32 user_id = 2;
+  Customer customer = 3;
 }
 
 message CancelBookingResponse {

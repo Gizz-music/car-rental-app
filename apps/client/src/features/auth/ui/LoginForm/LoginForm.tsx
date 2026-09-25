@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "@consta/uikit/Button";
 import { Text } from "@consta/uikit/Text";
@@ -11,8 +11,14 @@ import { Form } from "@/shared/components/Form";
 
 import styles from "../authForm.module.css";
 
+interface LocationState {
+  from?: { pathname: string };
+}
+
 export const LoginForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as LocationState | null)?.from?.pathname || "/";
 
   const [login, { isLoading }] = useLoginMutation();
 
@@ -27,7 +33,7 @@ export const LoginForm = () => {
     try {
       setError(null);
       await login({ email, password }).unwrap();
-      navigate("/");
+      navigate(from, { replace: true });
     } catch {
       setError("Failed to log in. Please check your email and password.");
     }

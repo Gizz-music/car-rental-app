@@ -1,11 +1,13 @@
 import { Badge } from "@consta/uikit/Badge";
+import { Button } from "@consta/uikit/Button";
 import { Text } from "@consta/uikit/Text";
+
+import { formatDate, formatPrice } from "@/shared/lib/format";
 
 import {
   countDays,
-  formatDate,
-  formatPrice,
   getBookingState,
+  getCancellationPlan,
 } from "../../lib/bookingPeriod";
 import type { Booking } from "../../model/types";
 
@@ -13,11 +15,18 @@ import styles from "./styles.module.css";
 
 interface BookingCardProps {
   booking: Booking;
+  onCancel: (booking: Booking) => void;
 }
 
-export const BookingCard = ({ booking }: BookingCardProps) => {
+const CANCEL_LABEL = {
+  cancel: "Cancel booking",
+  endEarly: "End rental early",
+} as const;
+
+export const BookingCard = ({ booking, onCancel }: BookingCardProps) => {
   const { car, startDate, endDate, totalPrice } = booking;
   const { label, status } = getBookingState(booking);
+  const cancellation = getCancellationPlan(booking);
   const days = countDays(startDate, endDate);
   const carName = `${car.brand} ${car.model}`;
 
@@ -45,6 +54,15 @@ export const BookingCard = ({ booking }: BookingCardProps) => {
             {formatPrice(totalPrice)}
           </Text>
         </div>
+        {cancellation && (
+          <Button
+            size="s"
+            view="secondary"
+            label={CANCEL_LABEL[cancellation.kind]}
+            className={styles.cancel}
+            onClick={() => onCancel(booking)}
+          />
+        )}
       </div>
     </article>
   );

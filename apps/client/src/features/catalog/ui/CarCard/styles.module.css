@@ -1,0 +1,60 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  overflow: hidden;
+  padding: 12px;
+  text-align: left;
+  border-radius: 15px;
+  background: radial-gradient(
+    circle at 10% 20%,
+    #ffffff 0%,
+    #e6e6e6 60%,
+    #c9c9c9 100%
+  );
+  box-shadow:
+    0 10px 20px rgba(0, 0, 0, 0.15),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.1),
+    inset 3px 3px 8px rgba(255, 255, 255, 0.8);
+}
+
+/* Фото занимает всё место, оставшееся после текста: карточка подстраивается под высоту строки */
+.image {
+  flex: 1 1 0;
+  width: 100%;
+  min-height: 0;
+  object-fit: cover;
+  border-radius: 10px;
+  background-color: var(--surface);
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: auto;
+}
+
+.reserve {
+  --button-bg-color: var(--primary);
+  border-radius: 8px;
+}
+
+/* Низкий экран: ужимаем отступы и ставим цену рядом с кнопкой, чтобы осталось место для фото */
+@media (max-height: 760px) {
+  .card {
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .footer {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .action {
+    flex: 1;
+  }
+}

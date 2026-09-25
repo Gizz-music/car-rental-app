@@ -1,0 +1,87 @@
+.catalog {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+}
+
+/* Сетка занимает всё место до пагинации и делит его поровну между строками.
+   Число строк фиксировано: карточки не меняют размер на неполной последней странице */
+.list {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  touch-action: pan-y;
+  transition: opacity 0.2s ease;
+}
+
+.list[data-fetching="true"] {
+  opacity: 0.6;
+}
+
+.item {
+  min-height: 0;
+}
+
+/* Consta считает, сколько номеров влезает, по ширине самого nav — поэтому растягиваем его */
+.pagination {
+  flex-shrink: 0;
+  justify-content: center;
+}
+
+.pagination :global(.PaginationArrow),
+.pagination :global(.PaginationItem) {
+  --button-color: var(--light);
+  --button-color-hover: #fff;
+  --button-bg-color-hover: rgba(255, 255, 255, 0.2);
+  --button-color-disable: rgba(255, 255, 255, 0.4);
+  --button-bg-color-disable: transparent;
+}
+
+.pagination :global(.PaginationItem_active) {
+  --button-color: #fff;
+  --button-bg-color: rgba(255, 255, 255, 0.25);
+}
+
+.loader {
+  margin: 40px auto;
+}
+
+.empty {
+  padding: 40px 0;
+  text-align: center;
+}
+
+@media (max-height: 760px) {
+  .catalog {
+    gap: 8px;
+  }
+
+  .list {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .catalog {
+    gap: 12px;
+  }
+
+  .list {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+}

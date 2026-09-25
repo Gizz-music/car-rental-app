@@ -23,6 +23,12 @@ const toTime = (date: string): number => {
 
 export const today = (): string => toIsoDate(Date.now());
 
+export const addDays = (date: string, days: number): string =>
+  toIsoDate(toTime(date) + days * DAY_MS);
+
+export const daysBetween = (start: string, end: string): number =>
+  (toTime(end) - toTime(start)) / DAY_MS;
+
 export const parseDateRange = (start: string, end: string): DateRange => {
   const startTime = toTime(start);
   const endTime = toTime(end);
@@ -40,5 +46,5 @@ export const parseDateRange = (start: string, end: string): DateRange => {
 // Период «на сегодня»: используется, когда клиент не выбрал даты
 export const todayRange = (): DateRange => {
   const start = today();
-  return { start, end: toIsoDate(toTime(start) + DAY_MS), days: 1 };
+  return { start, end: addDays(start, 1), days: 1 };
 };

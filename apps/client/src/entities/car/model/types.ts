@@ -14,13 +14,23 @@ export interface Car {
   imageUrl: string;
 }
 
-// Элемент каталога: available — свободно ли авто на выбранный период
+// Элемент каталога: available — свободно ли авто на выбранный период.
+// unavailableUntil — дата YYYY-MM-DD, когда авто снова свободно; пустая, если available.
 export interface CarWithAvailability extends Car {
   available: boolean;
+  unavailableUntil: string;
 }
 
-// Даты в формате YYYY-MM-DD; без них доступность считается на сегодня
+export interface CarsPage {
+  items: CarWithAvailability[];
+  total: number;
+}
+
+// Даты в формате YYYY-MM-DD; без них доступность считается на сегодня.
+// page начинается с 1
 export interface CarsQueryParams {
-  startDate: string;
-  endDate: string;
+  startDate?: string;
+  endDate?: string;
+  page: number;
+  pageSize: number;
 }

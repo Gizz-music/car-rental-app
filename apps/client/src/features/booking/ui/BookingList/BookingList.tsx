@@ -1,14 +1,19 @@
+import { useState } from "react";
+
 import { Informer } from "@consta/uikit/Informer";
 import { Loader } from "@consta/uikit/Loader";
 import { Text } from "@consta/uikit/Text";
 
 import { useMyBookingsQuery } from "../../api/bookingsApi";
+import type { Booking } from "../../model/types";
 import { BookingCard } from "../BookingCard";
+import { CancelBookingModal } from "../CancelBookingModal";
 
 import styles from "./styles.module.css";
 
 export const BookingList = () => {
   const { data: bookings, isLoading, isError } = useMyBookingsQuery();
+  const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
 
   if (isLoading) {
     return <Loader className={styles.loader} />;
@@ -34,12 +39,18 @@ export const BookingList = () => {
   }
 
   return (
-    <ul className={styles.list}>
-      {bookings.map((booking) => (
-        <li key={booking.id}>
-          <BookingCard booking={booking} />
-        </li>
-      ))}
-    </ul>
+    <>
+      <ul className={styles.list}>
+        {bookings.map((booking) => (
+          <li key={booking.id}>
+            <BookingCard booking={booking} onCancel={setBookingToCancel} />
+          </li>
+        ))}
+      </ul>
+      <CancelBookingModal
+        booking={bookingToCancel}
+        onClose={() => setBookingToCancel(null)}
+      />
+    </>
   );
 };

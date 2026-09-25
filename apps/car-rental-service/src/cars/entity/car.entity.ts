@@ -30,6 +30,7 @@ export class Car {
   @Column({ name: 'price_per_day', type: 'integer' })
   pricePerDay: number;
 
+  // Путь или URL фотографии, подобранной под модель
   @Column({ name: 'image_url', default: '' })
   imageUrl: string;
 }

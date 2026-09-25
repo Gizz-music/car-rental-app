@@ -26,7 +26,7 @@
     font-size: 16px;
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 600px), (max-height: 760px) {
     --page-padding: 12px;
   }
 }
@@ -41,9 +41,10 @@ body {
   margin: 0;
 }
 
+/* Окно не скроллится целиком: хедер всегда на месте, прокручивается только контент */
 #root {
   text-align: center;
-  min-height: 100svh;
+  height: 100svh;
   display: flex;
   flex-direction: column;
   background-color: #1f2028;

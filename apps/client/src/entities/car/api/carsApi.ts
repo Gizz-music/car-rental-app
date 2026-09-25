@@ -1,13 +1,13 @@
 import { baseApi } from "@/shared/api/baseApi";
 
-import type { CarsQueryParams, CarWithAvailability } from "../model/types";
+import type { CarsPage, CarsQueryParams } from "../model/types";
 
 export const carsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    cars: build.query<CarWithAvailability[], CarsQueryParams | void>({
+    cars: build.query<CarsPage, CarsQueryParams>({
       query: (params) => ({
         url: "cars",
-        params: params ?? undefined,
+        params,
       }),
       providesTags: ["Car"],
     }),

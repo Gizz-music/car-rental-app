@@ -45,6 +45,15 @@
   margin-top: auto;
 }
 
+.cancel {
+  --button-color: var(--color-typo-alert);
+  --button-color-hover: var(--color-typo-alert);
+  --button-border: var(--color-typo-alert);
+  --button-border-hover: var(--color-typo-alert);
+  align-self: flex-end;
+  border-radius: 8px;
+}
+
 @media (max-width: 600px) {
   .card {
     flex-direction: column;

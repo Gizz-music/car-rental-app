@@ -1,8 +1,14 @@
+/* Единственная прокручиваемая область приложения — хедер над ней остаётся на месте.
+   Grid-строка ровно в высоту области: растянутая страница (каталог) не выходит за экран,
+   а более высокий контент других страниц скроллится. safe center не обрезает его сверху */
 .pageContainer {
   flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  grid-template-rows: minmax(0, auto);
+  place-items: safe center;
+  min-height: 0;
   width: 100%;
   padding: var(--page-padding);
+  overflow-x: hidden;
+  overflow-y: auto;
 }
