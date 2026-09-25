@@ -5,10 +5,40 @@
   border-radius: 8px;
 }
 
+.user {
+  max-width: 240px;
+  padding: 4px 12px 4px 4px;
+  border: none;
+  border-radius: 24px;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* Consta резервирует под именем отступ для строки info, которую мы не выводим */
+.user :global(.User-Name) {
+  margin-bottom: 0;
+}
+
+.user:focus-visible {
+  outline: 2px solid var(--primary);
+}
+
+@media (hover: hover) {
+  .user:hover {
+    background-color: rgba(58, 118, 169, 0.15);
+  }
+}
+
 @media (max-width: 600px) {
   .button {
     --button-height: 32px;
     --button-font-size: 14px;
     width: 96px;
+  }
+
+  .user {
+    max-width: 160px;
   }
 }

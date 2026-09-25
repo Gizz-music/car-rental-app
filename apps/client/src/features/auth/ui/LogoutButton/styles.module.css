@@ -1,0 +1,11 @@
+.button {
+  --button-bg-color: var(--primary);
+  width: 160px;
+  border-radius: 8px;
+}
+
+@media (max-width: 600px) {
+  .button {
+    width: 100%;
+  }
+}
