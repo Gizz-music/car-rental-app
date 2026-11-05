@@ -1,0 +1,93 @@
+name: Agent fix
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: agent-fix-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  fix:
+    name: Fix CI failure
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Skip an agent fix that still fails
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          message=$(gh api "repos/${{ github.repository }}/commits/${{ github.event.workflow_run.head_sha }}" --jq .commit.message)
+          if printf '%s\n' "$message" | grep -F -q '[agent-fix]'; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "The failed commit is already an agent fix. Stopping so the loop cannot repeat."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Find the pull request
+        id: pr
+        if: steps.gate.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          pr_url=$(gh api "repos/${{ github.repository }}/commits/${{ github.event.workflow_run.head_sha }}/pulls" --jq '.[0].html_url // empty' || true)
+          echo "url=$pr_url" >> "$GITHUB_OUTPUT"
+
+      - name: Collect the failed log
+        if: steps.gate.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          : > failed.log
+          for _ in 1 2 3 4 5; do
+            if gh run view "${{ github.event.workflow_run.id }}" --repo "${{ github.repository }}" --log-failed > failed.log; then
+              break
+            fi
+            sleep 10
+          done
+          tail -n 400 failed.log > failed-tail.log
+
+      - name: Setup Node.js
+        if: steps.gate.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: scripts/agent-fix/package-lock.json
+
+      - name: Install the agent script
+        if: steps.gate.outputs.skip != 'true'
+        working-directory: scripts/agent-fix
+        run: |
+          npm install -g npm@11.8.0
+          npm ci
+
+      - name: Ask Cursor to fix the failure
+        if: steps.gate.outputs.skip != 'true'
+        working-directory: scripts/agent-fix
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          PR_URL: ${{ steps.pr.outputs.url }}
+        run: node fix.mjs "$GITHUB_WORKSPACE/failed-tail.log"
