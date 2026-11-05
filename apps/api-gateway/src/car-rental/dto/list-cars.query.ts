@@ -4,7 +4,7 @@ import { IsIsoDate } from './iso-date';
 
 const MAX_PAGE_SIZE = 50;
 
-// Без дат доступность считается на сегодня
+// Без дат авто недоступно, пока есть активная бронь. С датами — только на этот период.
 export class ListCarsQuery {
   @IsOptional()
   @IsIsoDate()

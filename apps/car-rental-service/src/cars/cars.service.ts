@@ -18,7 +18,8 @@ export class CarsService {
     private readonly bookingsService: BookingsService,
   ) {}
 
-  // Отдаём страницу авто с флагом доступности: скрыть или заблюрить решает клиент
+  // Отдаём страницу авто с флагом доступности: скрыть кнопку или показать срок решает клиент.
+  // Без дат авто считается занятым, пока есть активная бронь — текущая или будущая.
   async list({
     startDate,
     endDate,
@@ -42,11 +43,10 @@ export class CarsService {
       skip,
       take,
     });
-    const unavailableUntilByCarId =
-      await this.bookingsService.findUnavailableUntil(
-        cars.map(({ id }) => id),
-        range,
-      );
+    const carIds = cars.map(({ id }) => id);
+    const unavailableUntilByCarId = startDate
+      ? await this.bookingsService.findUnavailableUntil(carIds, range)
+      : await this.bookingsService.findReservedUntil(carIds, range.start);
 
     return {
       cars: cars.map((car) => ({

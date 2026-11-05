@@ -7,7 +7,8 @@ package car_rental;
 // the car is free again on end_date.
 
 service CarsService {
-  // Without dates, availability is calculated for today.
+  // Without dates, a car with any active booking (current or upcoming) is unavailable
+  // until the last such booking ends. With dates, availability is for that period only.
   rpc ListCars(ListCarsRequest) returns (ListCarsResponse);
 }
 

@@ -19,6 +19,9 @@ import { Booking, BookingStatus } from './entity/booking.entity';
 import { BookingEventsPublisher } from './booking-events.publisher';
 import { toBooking } from './booking.mapper';
 
+const asIsoDate = (value: string | Date): string =>
+  typeof value === 'string' ? value.slice(0, 10) : value.toISOString().slice(0, 10);
+
 // Конец непрерывной занятости, если она пересекает период. Иначе авто свободно.
 const contiguousReleaseDate = (
   bookings: { startDate: string; endDate: string }[],
@@ -77,12 +80,14 @@ export class BookingsService {
     });
 
     const byCar = new Map<number, { startDate: string; endDate: string }[]>();
-    for (const { carId, startDate, endDate } of bookings) {
-      const carBookings = byCar.get(carId);
+    for (const booking of bookings) {
+      const startDate = asIsoDate(booking.startDate);
+      const endDate = asIsoDate(booking.endDate);
+      const carBookings = byCar.get(booking.carId);
       if (carBookings) {
         carBookings.push({ startDate, endDate });
       } else {
-        byCar.set(carId, [{ startDate, endDate }]);
+        byCar.set(booking.carId, [{ startDate, endDate }]);
       }
     }
 
@@ -94,6 +99,36 @@ export class BookingsService {
       }
     }
     return unavailableUntil;
+  }
+
+  // Каталог без выбранных дат: любая ещё не закончившаяся бронь занимает авто.
+  // Дата — день, когда заканчивается последняя активная бронь и кнопка Reserve возвращается.
+  async findReservedUntil(
+    carIds: number[],
+    fromDate: string,
+  ): Promise<Map<number, string>> {
+    if (!carIds.length) {
+      return new Map();
+    }
+
+    const bookings = await this.bookingsRepository.find({
+      select: { carId: true, endDate: true },
+      where: {
+        carId: In(carIds),
+        status: BookingStatus.Active,
+        endDate: MoreThan(fromDate),
+      },
+    });
+
+    const reservedUntil = new Map<number, string>();
+    for (const booking of bookings) {
+      const endDate = asIsoDate(booking.endDate);
+      const current = reservedUntil.get(booking.carId);
+      if (!current || endDate > current) {
+        reservedUntil.set(booking.carId, endDate);
+      }
+    }
+    return reservedUntil;
   }
 
   async create({

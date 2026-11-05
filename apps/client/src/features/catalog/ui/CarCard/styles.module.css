@@ -36,9 +36,22 @@
   margin-top: auto;
 }
 
+.action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+}
+
 .reserve {
+  width: 100%;
   --button-bg-color: var(--primary);
   border-radius: 8px;
+}
+
+.status {
+  width: 100%;
+  line-height: 1.3;
 }
 
 /* Низкий экран: ужимаем отступы и ставим цену рядом с кнопкой, чтобы осталось место для фото */

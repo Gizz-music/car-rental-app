@@ -14,7 +14,8 @@ export interface Car {
   imageUrl: string;
 }
 
-// Элемент каталога: available — свободно ли авто на выбранный период.
+// Элемент каталога: available — можно ли нажать Reserve.
+// Без дат в запросе available = false, пока есть активная бронь.
 // unavailableUntil — дата YYYY-MM-DD, когда авто снова свободно; пустая, если available.
 export interface CarWithAvailability extends Car {
   available: boolean;

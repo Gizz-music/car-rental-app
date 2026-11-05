@@ -20,6 +20,9 @@ export const CarCard = ({ car, onReserve }: CarCardProps) => {
   const location = useLocation();
   const user = useAppSelector(selectCurrentUser);
   const name = `${car.brand} ${car.model}`;
+  const reservationLabel = car.unavailableUntil
+    ? `Already reserved until ${formatDate(car.unavailableUntil)}`
+    : "Already reserved";
 
   const handleReserve = () => {
     if (!user) {
@@ -57,10 +60,14 @@ export const CarCard = ({ car, onReserve }: CarCardProps) => {
               onClick={handleReserve}
             />
           ) : (
-            <Text size="s" weight="semibold" view="alert" align="center">
-              {car.unavailableUntil
-                ? `Unavailable until ${formatDate(car.unavailableUntil)}`
-                : "Unavailable"}
+            <Text
+              size="s"
+              weight="semibold"
+              view="alert"
+              align="center"
+              className={styles.status}
+            >
+              {reservationLabel}
             </Text>
           )}
         </div>
