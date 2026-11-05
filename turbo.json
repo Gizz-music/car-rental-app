@@ -8,10 +8,17 @@
       "outputs": ["dist/**"]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": ["^lint", "^build"]
     },
     "check-types": {
       "dependsOn": ["^check-types"]
+    },
+    "test": {
+      "dependsOn": ["^build"]
+    },
+    "lint:fix": {
+      "dependsOn": ["^build"],
+      "cache": false
     },
     "dev": {
       "dependsOn": ["^build"],
