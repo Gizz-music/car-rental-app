@@ -4,30 +4,36 @@ import type {
   CarBookedEvent,
 } from '@car-rental/contracts';
 import { MailService } from '../mail/mail.service';
-import { bookingCancelledEmail } from './templates/booking-cancelled.template';
-import { carBookedEmail } from './templates/car-booked.template';
+import { BookingEmailComposer } from './booking-email.composer';
 
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
 
-  constructor(private readonly mailService: MailService) {}
+  constructor(
+    private readonly mailService: MailService,
+    private readonly emails: BookingEmailComposer,
+  ) {}
 
   async notifyCarBooked(event: CarBookedEvent): Promise<void> {
+    const email = await this.emails.composeCarBooked(event);
     await this.mailService.send({
       to: event.customer.email,
-      ...carBookedEmail(event),
+      ...email.message,
     });
-    this.logger.log(`Booking confirmation sent for booking ${event.bookingId}`);
+    this.logger.log(
+      `Booking confirmation sent for booking ${event.bookingId} (${email.source})`,
+    );
   }
 
   async notifyBookingCancelled(event: BookingCancelledEvent): Promise<void> {
+    const email = await this.emails.composeCancelled(event);
     await this.mailService.send({
       to: event.customer.email,
-      ...bookingCancelledEmail(event),
+      ...email.message,
     });
     this.logger.log(
-      `Cancellation notice sent for booking ${event.bookingId} (ended early: ${event.endedEarly})`,
+      `Cancellation notice sent for booking ${event.bookingId} (${email.source}, ended early: ${event.endedEarly})`,
     );
   }
 }

@@ -25,7 +25,7 @@ const escapeHtml = (value: string) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-interface BookingEmailContent {
+export interface BookingEmailContent {
   subject: string;
   intro: string;
   details: [label: string, value: string][];
@@ -53,7 +53,7 @@ export const renderBookingEmail = (
   const html = `
     <div style="font-family:Arial,sans-serif;font-size:14px;color:#222">
       <p>Здравствуйте, ${escapeHtml(event.customer.name)}!</p>
-      <p>${intro}</p>
+      <p>${escapeHtml(intro)}</p>
       <table>${rows}</table>
     </div>`;
 
