@@ -14,7 +14,9 @@ import { BookingEventsPublisher } from './booking-events.publisher';
 import { toBooking } from './booking.mapper';
 
 const asIsoDate = (value: string | Date): string =>
-  typeof value === 'string' ? value.slice(0, 10) : value.toISOString().slice(0, 10);
+  typeof value === 'string'
+    ? value.slice(0, 10)
+    : value.toISOString().slice(0, 10);
 
 // Конец непрерывной занятости, если она пересекает период. Иначе авто свободно.
 const contiguousReleaseDate = (
