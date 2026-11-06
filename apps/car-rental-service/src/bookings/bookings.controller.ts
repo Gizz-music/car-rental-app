@@ -18,4 +18,8 @@ export class BookingsController implements carRental.BookingsServiceController {
   cancelBooking(request: carRental.CancelBookingRequest) {
     return this.bookingsService.cancel(request);
   }
+
+  deleteBooking(request: carRental.DeleteBookingRequest) {
+    return this.bookingsService.remove(request);
+  }
 }

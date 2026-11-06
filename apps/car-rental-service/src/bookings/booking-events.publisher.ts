@@ -39,15 +39,8 @@ export class BookingEventsPublisher {
     this.publish(CAR_BOOKED_EVENT, event);
   }
 
-  bookingCancelled(
-    booking: Booking,
-    customer: carRental.Customer,
-    endedEarly: boolean,
-  ) {
-    const event: BookingCancelledEvent = {
-      ...toEventDetails(booking, customer),
-      endedEarly,
-    };
+  bookingCancelled(booking: Booking, customer: carRental.Customer) {
+    const event: BookingCancelledEvent = toEventDetails(booking, customer);
     this.publish(BOOKING_CANCELLED_EVENT, event);
   }
 

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -46,7 +47,7 @@ export class BookingsController {
     return bookings;
   }
 
-  // POST /bookings/:id/cancel - отмена будущей брони или досрочное завершение идущей
+  // POST /bookings/:id/cancel - отмена будущей или идущей брони, статус становится cancelled
   @Post(':id/cancel')
   async cancel(
     @Param('id', ParseIntPipe) bookingId: number,
@@ -57,5 +58,17 @@ export class BookingsController {
       customer: { id: user.sub, email: user.email, name: user.name },
     });
     return booking;
+  }
+
+  // DELETE /bookings/:id - убрать завершённую или отменённую бронь из истории
+  @Delete(':id')
+  async remove(
+    @Param('id', ParseIntPipe) bookingId: number,
+    @Req() { user }: AuthenticatedRequest,
+  ): Promise<void> {
+    await this.carRentalClient.deleteBooking({
+      bookingId,
+      customer: { id: user.sub, email: user.email, name: user.name },
+    });
   }
 }

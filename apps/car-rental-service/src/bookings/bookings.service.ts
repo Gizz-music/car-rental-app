@@ -3,13 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, LessThan, MoreThan, Repository } from 'typeorm';
 import type { carRental } from '@car-rental/contracts';
 import { Car } from '../cars/entity/car.entity';
-import {
-  addDays,
-  DateRange,
-  daysBetween,
-  parseDateRange,
-  today,
-} from '../common/date-range';
+import { DateRange, parseDateRange, today } from '../common/date-range';
 import {
   failedPrecondition,
   invalidArgument,
@@ -187,8 +181,7 @@ export class BookingsService {
     return { bookings: bookings.map(toBooking) };
   }
 
-  // Будущая бронь отменяется целиком. Идущая аренда завершается досрочно:
-  // сегодня — последний оплачиваемый день, авто свободно с завтрашнего дня
+  // Любая ещё не завершённая бронь отменяется целиком: статус становится cancelled, авто снова свободно.
   async cancel({
     bookingId,
     customer,
@@ -208,36 +201,45 @@ export class BookingsService {
     if (booking.status === BookingStatus.Cancelled) {
       throw failedPrecondition('Booking is already cancelled');
     }
-
-    const now = today();
-    if (booking.endDate <= now) {
+    if (asIsoDate(booking.endDate) <= today()) {
       throw failedPrecondition('A completed booking cannot be cancelled');
     }
 
-    const endedEarly = booking.startDate <= now;
-    if (endedEarly) {
-      this.endEarly(booking, addDays(now, 1));
-    } else {
-      booking.status = BookingStatus.Cancelled;
-    }
+    booking.status = BookingStatus.Cancelled;
     await this.bookingsRepository.save(booking);
 
-    this.eventsPublisher.bookingCancelled(booking, customer, endedEarly);
+    this.eventsPublisher.bookingCancelled(booking, customer);
 
     return { booking: toBooking(booking) };
   }
 
-  // Цена пересчитывается по ставке из брони, а не по текущему тарифу авто
-  private endEarly(booking: Booking, endDate: string) {
-    if (endDate >= booking.endDate) {
-      throw failedPrecondition('Today is already the last day of this rental');
+  // Завершённая или отменённая бронь уже не занимает авто — удаляем только запись из истории.
+  async remove({
+    bookingId,
+    customer,
+  }: carRental.DeleteBookingRequest): Promise<carRental.DeleteBookingResponse> {
+    if (!customer) {
+      throw invalidArgument('Customer is required');
     }
 
-    const dailyRate =
-      booking.totalPrice / daysBetween(booking.startDate, booking.endDate);
-    booking.endDate = endDate;
-    booking.totalPrice = Math.round(
-      dailyRate * daysBetween(booking.startDate, endDate),
-    );
+    const booking = await this.bookingsRepository.findOne({
+      where: { id: bookingId, userId: customer.id },
+    });
+    if (!booking) {
+      throw notFound('Booking not found');
+    }
+
+    const isCancelled = booking.status === BookingStatus.Cancelled;
+    const isCompleted =
+      booking.status === BookingStatus.Active &&
+      asIsoDate(booking.endDate) <= today();
+    if (!isCancelled && !isCompleted) {
+      throw failedPrecondition(
+        'Only a completed or cancelled booking can be deleted',
+      );
+    }
+
+    await this.bookingsRepository.delete({ id: booking.id });
+    return {};
   }
 }

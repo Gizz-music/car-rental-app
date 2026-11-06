@@ -5,13 +5,9 @@ import { Modal } from "@consta/uikit/Modal";
 import { Text } from "@consta/uikit/Text";
 
 import { getApiErrorMessage } from "@/shared/lib/apiError";
-import { formatDate, formatPrice } from "@/shared/lib/format";
+import { formatDate } from "@/shared/lib/format";
 
 import { useCancelBookingMutation } from "../../api/bookingsApi";
-import {
-  getCancellationPlan,
-  type CancellationPlan,
-} from "../../lib/bookingPeriod";
 import type { Booking } from "../../model/types";
 
 import styles from "./styles.module.css";
@@ -20,25 +16,6 @@ interface CancelBookingModalProps {
   booking: Booking | null;
   onClose: () => void;
 }
-
-const getContent = (booking: Booking, plan: CancellationPlan) => {
-  const carName = `${booking.car.brand} ${booking.car.model}`;
-
-  if (plan.kind === "cancel") {
-    return {
-      title: `Cancel ${carName} booking?`,
-      description: `The booking for ${formatDate(booking.startDate)} — ${formatDate(booking.endDate)} will be cancelled.`,
-      confirmLabel: "Cancel booking",
-    };
-  }
-
-  return {
-    title: `End ${carName} rental early?`,
-    description: `Today will be the last day of the rental. Please return the car by ${formatDate(plan.endDate)}.`,
-    confirmLabel: "End rental",
-    price: `New total: ${formatPrice(plan.totalPrice)} instead of ${formatPrice(booking.totalPrice)}`,
-  };
-};
 
 export const CancelBookingModal = ({
   booking,
@@ -53,8 +30,7 @@ export const CancelBookingModal = ({
     setError(null);
   }
 
-  const plan = booking && getCancellationPlan(booking);
-  const content = booking && plan && getContent(booking, plan);
+  const carName = booking && `${booking.car.brand} ${booking.car.model}`;
 
   const handleClose = () => {
     if (!isLoading) {
@@ -89,19 +65,16 @@ export const CancelBookingModal = ({
       onClose={handleClose}
       onEsc={handleClose}
     >
-      {content && (
+      {booking && (
         <div className={styles.content}>
           <Text size="xl" weight="semibold" view="primary">
-            {content.title}
+            Are you sure you want to cancel this booking?
           </Text>
           <Text size="m" view="primary">
-            {content.description}
+            The booking of {carName} for {formatDate(booking.startDate)} —{" "}
+            {formatDate(booking.endDate)} will be cancelled, and the car will
+            be available again.
           </Text>
-          {content.price && (
-            <Text size="m" weight="semibold" view="brand">
-              {content.price}
-            </Text>
-          )}
           {error && (
             <Text size="s" view="alert">
               {error}
@@ -109,13 +82,13 @@ export const CancelBookingModal = ({
           )}
           <div className={styles.actions}>
             <Button
-              label={content.confirmLabel}
+              label="Yes"
               className={styles.confirm}
               loading={isLoading}
               onClick={handleConfirm}
             />
             <Button
-              label="Keep booking"
+              label="No"
               view="ghost"
               disabled={isLoading}
               onClick={handleClose}

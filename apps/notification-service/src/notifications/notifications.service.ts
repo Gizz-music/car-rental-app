@@ -33,7 +33,7 @@ export class NotificationsService {
       ...email.message,
     });
     this.logger.log(
-      `Cancellation notice sent for booking ${event.bookingId} (${email.source}, ended early: ${event.endedEarly})`,
+      `Cancellation notice sent for booking ${event.bookingId} (${email.source})`,
     );
   }
 }

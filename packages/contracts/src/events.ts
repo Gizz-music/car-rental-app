@@ -22,8 +22,4 @@ export interface BookingEventDetails {
 
 export type CarBookedEvent = BookingEventDetails;
 
-export interface BookingCancelledEvent extends BookingEventDetails {
-  // true: the rental was in progress and ended early,
-  // endDate and totalPrice are already recalculated.
-  endedEarly: boolean;
-}
+export type BookingCancelledEvent = BookingEventDetails;

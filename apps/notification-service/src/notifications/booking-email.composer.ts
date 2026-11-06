@@ -38,11 +38,11 @@ export class BookingEmailComposer {
   }
 
   composeCancelled(event: BookingCancelledEvent): Promise<ComposedEmail> {
-    const situation = event.endedEarly
-      ? 'Аренда уже шла и завершена досрочно. Дата возврата и стоимость уже пересчитаны.'
-      : 'Будущая бронь отменена.';
-
-    return this.compose(event, situation, bookingCancelledContent(event));
+    return this.compose(
+      event,
+      'Бронь отменена.',
+      bookingCancelledContent(event),
+    );
   }
 
   private async compose(

@@ -39,4 +39,8 @@ export class CarRentalClient implements OnModuleInit {
   cancelBooking(request: carRental.CancelBookingRequest) {
     return lastValueFrom(this.bookingsService.cancelBooking(request));
   }
+
+  deleteBooking(request: carRental.DeleteBookingRequest) {
+    return lastValueFrom(this.bookingsService.deleteBooking(request));
+  }
 }

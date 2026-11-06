@@ -1,0 +1,23 @@
+.modal {
+  width: min(440px, calc(100vw - 32px));
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  text-align: left;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.confirm {
+  --button-bg-color: var(--color-bg-alert);
+  --button-bg-color-hover: var(--color-bg-alert);
+  border-radius: 8px;
+}

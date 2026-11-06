@@ -16,6 +16,9 @@ service BookingsService {
   rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
   rpc ListUserBookings(ListUserBookingsRequest) returns (ListUserBookingsResponse);
   rpc CancelBooking(CancelBookingRequest) returns (CancelBookingResponse);
+  // Removes a completed or cancelled booking from the user's history.
+  // Upcoming and in-progress bookings are cancelled, not deleted.
+  rpc DeleteBooking(DeleteBookingRequest) returns (DeleteBookingResponse);
 }
 
 message Car {
@@ -89,8 +92,8 @@ message ListUserBookingsResponse {
   repeated Booking bookings = 1;
 }
 
-// An upcoming booking is cancelled. A booking in progress ends early:
-// today is the last paid day, end_date and total_price are recalculated.
+// Cancels an upcoming or in-progress booking. Status becomes cancelled
+// and the car is free again. A completed booking cannot be cancelled.
 message CancelBookingRequest {
   reserved 2;
   reserved "user_id";
@@ -101,3 +104,10 @@ message CancelBookingRequest {
 message CancelBookingResponse {
   Booking booking = 1;
 }
+
+message DeleteBookingRequest {
+  int32 booking_id = 1;
+  Customer customer = 2;
+}
+
+message DeleteBookingResponse {}
