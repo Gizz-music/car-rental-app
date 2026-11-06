@@ -15,8 +15,7 @@ const priceFormatter = new Intl.NumberFormat("ru-RU", {
 export const formatDate = (date: string) =>
   dateFormatter.format(new Date(date));
 
-export const formatPrice = (price: number) =>
-  priceFormatter.format(price.toFixed(2));
+export const formatPrice = (price: number) => priceFormatter.format(price);
 
 export const formatLabel = (value: string) =>
   value.charAt(0).toUpperCase() + value.slice(1);
