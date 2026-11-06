@@ -1,9 +1,5 @@
 import type { BookingCancelledEvent } from '@car-rental/contracts';
-import {
-  type BookingEmailContent,
-  carName,
-  formatDate,
-} from './booking-email';
+import { type BookingEmailContent, carName, formatDate } from './booking-email';
 
 export const bookingCancelledContent = (
   event: BookingCancelledEvent,
