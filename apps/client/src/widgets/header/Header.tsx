@@ -17,7 +17,7 @@ export const Header = () => {
         {user ? (
           <NavLink
             to="/assistant"
-            className={({ isActive }) =>
+            className={({ isActive }: { isActive: boolean }) =>
               isActive
                 ? `${styles.assistantLink} ${styles.assistantLinkActive}`
                 : styles.assistantLink
