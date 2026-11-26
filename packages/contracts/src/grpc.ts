@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import type { GrpcOptions } from '@nestjs/microservices';
 
+import { ASSISTANT_PACKAGE_NAME } from './generated/assistant/assistant';
 import { AUTH_PACKAGE_NAME } from './generated/auth/auth';
 import { CAR_RENTAL_PACKAGE_NAME } from './generated/car_rental/car_rental';
 
@@ -22,4 +23,9 @@ export const authGrpcOptions = grpcOptions(AUTH_PACKAGE_NAME, 'auth/auth.proto')
 export const carRentalGrpcOptions = grpcOptions(
   CAR_RENTAL_PACKAGE_NAME,
   'car_rental/car_rental.proto',
+);
+
+export const assistantGrpcOptions = grpcOptions(
+  ASSISTANT_PACKAGE_NAME,
+  'assistant/assistant.proto',
 );

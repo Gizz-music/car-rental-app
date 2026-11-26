@@ -17,7 +17,11 @@ const CARDS: HomeCard[] = [
   { icon: AutoIcon, title: "Auto", to: "/cars" },
   { icon: IncomeIcon, title: "Income" },
   { icon: RepairIcon, title: "Repair" },
-  { icon: CommunicationIcon, title: "Communication" },
+  {
+    icon: CommunicationIcon,
+    title: "Communication",
+    to: "/assistant",
+  },
 ];
 
 export const HomePage = () => {
@@ -30,7 +34,7 @@ export const HomePage = () => {
 
         if (to) {
           return (
-            <Link key={title} to={to} className={styles.card} aria-label="Cars">
+            <Link key={title} to={to} className={styles.card} aria-label={title}>
               {content}
             </Link>
           );

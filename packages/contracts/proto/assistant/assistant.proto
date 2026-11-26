@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package assistant;
+
+service AssistantService {
+  rpc Chat(ChatRequest) returns (ChatResponse);
+}
+
+// Identity is filled in by the Gateway from the JWT. The client never sends it.
+message ChatRequest {
+  string message = 1;
+  int32 user_id = 2;
+  string email = 3;
+  string name = 4;
+}
+
+message Citation {
+  string title = 1;
+  string source = 2;
+}
+
+message ChatResponse {
+  string answer = 1;
+  repeated Citation citations = 2;
+  bool used_llm = 3;
+}

@@ -2,6 +2,7 @@
    Grid-строка ровно в высоту области: растянутая страница (каталог) не выходит за экран,
    а более высокий контент других страниц скроллится. safe center не обрезает его сверху */
 .pageContainer {
+  position: relative;
   flex: 1;
   display: grid;
   grid-template-rows: minmax(0, auto);

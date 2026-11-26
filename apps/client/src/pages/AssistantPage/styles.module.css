@@ -1,0 +1,91 @@
+.container {
+  position: absolute;
+  top: var(--page-padding);
+  bottom: var(--page-padding);
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(720px, calc(100% - 2 * var(--page-padding)));
+  min-height: 0;
+  overflow: hidden;
+  padding: 24px;
+  text-align: left;
+  background-color: var(--surface);
+  border-radius: 15px;
+  box-shadow: var(--shadow);
+  transform: translateX(-50%);
+}
+
+.intro {
+  flex-shrink: 0;
+}
+
+.intro > * {
+  margin: 0;
+}
+
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  padding: 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-light) transparent;
+  background-color: rgba(214, 214, 214, 0.35);
+  border-radius: 12px;
+}
+
+.userBubble,
+.assistantBubble {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 85%;
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+.userBubble {
+  align-self: flex-end;
+  background-color: #d7e8ff;
+}
+
+.assistantBubble {
+  align-self: flex-start;
+  background-color: #fff;
+}
+
+.citations {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.form {
+  display: flex;
+  flex-shrink: 0;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+@media (max-height: 760px) {
+  .container {
+    gap: 8px;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 16px 12px;
+  }
+
+  .form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

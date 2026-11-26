@@ -1,3 +1,4 @@
+export * as assistant from './generated/assistant/assistant';
 export * as auth from './generated/auth/auth';
 export * as carRental from './generated/car_rental/car_rental';
 export * from './events';

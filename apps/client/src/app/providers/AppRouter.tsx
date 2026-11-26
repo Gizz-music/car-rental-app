@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 
 import { BaseLayout } from "@/app/layouts/BaseLayout";
 import { RequireAuth } from "@/features/auth/providers/RequireAuth";
+import { AssistantPage } from "@/pages/AssistantPage";
 import { CarsPage } from "@/pages/CarsPage";
 import { HomePage } from "@/pages/HomePage";
 import { LoginPage } from "@/pages/LoginPage";
@@ -21,6 +22,14 @@ export const AppRouter = () => {
           element={
             <RequireAuth>
               <ProfilePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/assistant"
+          element={
+            <RequireAuth>
+              <AssistantPage />
             </RequireAuth>
           }
         />

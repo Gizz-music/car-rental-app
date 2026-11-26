@@ -1,3 +1,50 @@
+.actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.assistantLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 35px;
+  padding: 0 14px;
+  border: 2px solid var(--primary);
+  border-radius: 10px;
+  background-color: transparent;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.assistantIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.assistantLink:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.assistantLinkActive,
+.assistantLink:hover,
+.assistantLink:focus-visible {
+  background-color: var(--primary);
+  color: var(--light);
+  box-shadow: 0 2px 8px rgba(58, 118, 169, 0.35);
+}
+
 .container {
   position: relative;
   flex-shrink: 0;
@@ -14,5 +61,28 @@
 @media (max-width: 600px), (max-height: 760px) {
   .container {
     min-height: 56px;
+  }
+
+  .assistantLink {
+    height: 32px;
+  }
+}
+
+@media (max-width: 600px) {
+  .assistantLink {
+    justify-content: center;
+    width: 32px;
+    padding: 0;
+  }
+
+  .assistantLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 }

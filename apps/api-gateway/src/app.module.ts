@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { AssistantModule } from './assistant/assistant.module';
 import { AuthModule } from './auth/auth.module';
 import { CarRentalModule } from './car-rental/car-rental.module';
 import { GrpcExceptionFilter } from './common/grpc-exception.filter';
@@ -10,6 +11,7 @@ import { GrpcExceptionFilter } from './common/grpc-exception.filter';
     ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     CarRentalModule,
+    AssistantModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: GrpcExceptionFilter }],
 })

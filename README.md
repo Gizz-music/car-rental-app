@@ -13,9 +13,11 @@ flowchart LR
 
   Gateway -->|"gRPC :50051"| Auth["Auth service"]
   Gateway -->|"gRPC :50052"| Rental["Car-rental service"]
+  Gateway -->|"gRPC :50053"| AI["AI assistant service"]
 
   Auth --> AuthDB[("PostgreSQL<br/>car_rental_auth")]
   Rental --> RentalDB[("PostgreSQL<br/>car_rental_rentals")]
+  AI -->|"gRPC tools"| Rental
   Rental -->|"car.booked<br/>booking.cancelled"| RMQ["RabbitMQ<br/>notifications queue"]
   RMQ --> Notify["Notification service"]
   Notify --> SMTP["Mailpit SMTP<br/>:1025"]
@@ -28,6 +30,7 @@ flowchart LR
 | **auth-service** | Register / login / user lookup over gRPC. Owns users and signs JWTs. |
 | **car-rental-service** | Cars and bookings over gRPC. Owns availability, pricing, and domain events. |
 | **notification-service** | Consumes RabbitMQ events and sends email. No HTTP or gRPC surface. |
+| **ai-service** | RAG over rental FAQ, optional LLM, live catalog/booking tools. gRPC only. |
 | **@car-rental/contracts** | Protobuf APIs, generated TypeScript, JWT payload, RMQ queue options, event types. |
 
 Services do **not** share tables. Postgres is started once, then two databases are created on first boot: `car_rental_auth` and `car_rental_rentals`.
@@ -42,6 +45,7 @@ Services do **not** share tables. Postgres is started once, then two databases a
 - Cancel an upcoming booking, or end an in-progress rental early (price is recalculated)
 - Email on booking and cancellation (Mailpit in local development)
 - Demo fleet is seeded automatically when the rentals database is empty
+- In-app assistant (`/assistant`): RAG over rental FAQ, live catalog/booking tools, optional LLM
 
 ## Tech stack
 
@@ -63,7 +67,8 @@ car-rental-app/
 │   ├── api-gateway/            # HTTP → gRPC BFF
 │   ├── auth-service/           # gRPC AuthService
 │   ├── car-rental-service/     # gRPC CarsService + BookingsService
-│   └── notification-service/   # RabbitMQ consumer + SMTP
+│   ├── notification-service/   # RabbitMQ consumer + SMTP
+│   └── ai-service/             # RAG assistant + optional LLM
 ├── packages/
 │   └── contracts/              # proto/, generated TS, events, RMQ helpers
 ├── infra/postgres/init/        # creates the two databases
@@ -99,6 +104,7 @@ cp apps/api-gateway/.env.example apps/api-gateway/.env
 cp apps/auth-service/.env.example apps/auth-service/.env
 cp apps/car-rental-service/.env.example apps/car-rental-service/.env
 cp apps/notification-service/.env.example apps/notification-service/.env
+cp apps/ai-service/.env.example apps/ai-service/.env
 ```
 
 The client already has `apps/client/.env.development` with `VITE_API_URL=http://localhost:3000/`.
@@ -144,6 +150,7 @@ Turbo builds `@car-rental/contracts` first, then starts every app in watch mode.
 | API Gateway | http://localhost:3000 |
 | Auth gRPC | `localhost:50051` |
 | Car-rental gRPC | `localhost:50052` |
+| AI assistant gRPC | `localhost:50053` |
 
 Open the UI, register (password at least **7** characters), then go to **Cars**.
 
@@ -200,6 +207,7 @@ Base URL: `http://localhost:3000`. The SPA sends `credentials: include` so the c
 | `POST` | `/bookings` | Cookie | Body: `{ carId, startDate, endDate }`. User is taken from JWT, not the body. |
 | `GET` | `/bookings` | Cookie | Current user's bookings. |
 | `POST` | `/bookings/:id/cancel` | Cookie | Cancel or end early. Other people's IDs look like 404. |
+| `POST` | `/assistant/chat` | Cookie | Body: `{ message }`. RAG answer, citations, `usedLlm`. |
 
 gRPC status codes from downstream services are mapped to HTTP (`INVALID_ARGUMENT` → 400, `UNAUTHENTICATED` → 401, `NOT_FOUND` → 404, `ALREADY_EXISTS` / `FAILED_PRECONDITION` → 409, and so on).
 
@@ -223,6 +231,7 @@ Protobuf sources:
 
 - `packages/contracts/proto/auth/auth.proto`
 - `packages/contracts/proto/car_rental/car_rental.proto`
+- `packages/contracts/proto/assistant/assistant.proto`
 
 Generate TypeScript (Buf + ts-proto) and compile:
 
@@ -263,6 +272,7 @@ npx turbo dev --filter=api-gateway
 npx turbo dev --filter=auth-service
 npx turbo dev --filter=car-rental-service
 npx turbo dev --filter=notification-service
+npx turbo dev --filter=ai-service
 ```
 
 Inside a Nest app you can also use `npm run start:debug` for the inspector.
@@ -275,6 +285,7 @@ Inside a Nest app you can also use `npm run start:debug` for the inspector.
 | `CORS_ORIGIN` | api-gateway | `http://localhost:5173` (comma-separated) |
 | `AUTH_GRPC_URL` | api-gateway | `localhost:50051` |
 | `CAR_RENTAL_GRPC_URL` | api-gateway | `localhost:50052` |
+| `ASSISTANT_GRPC_URL` | api-gateway | `localhost:50053` |
 | `JWT_ACCESS_SECRET` | gateway + auth | Must match |
 | `JWT_ACCESS_EXPIRES` | auth-service | `7d` |
 | `GRPC_URL` | auth / car-rental | Bind address for that service |
@@ -282,5 +293,6 @@ Inside a Nest app you can also use `npm run start:debug` for the inspector.
 | `RABBITMQ_URL` | car-rental + notifications | `amqp://guest:guest@localhost:5672` |
 | `SMTP_*` / `MAIL_FROM` | notifications | Mailpit locally; set user/pass for a real SMTP host |
 | `VITE_API_URL` | client | Gateway base URL (trailing slash) |
+| `LLM_API_KEY` / `LLM_BASE_URL` | notifications + ai-service | Optional OpenAI-compatible chat API |
 
 Root `.env` only overrides Docker Compose ports and credentials (`POSTGRES_*`, `RABBITMQ_*`, `SMTP_PORT`, `MAILPIT_UI_PORT`).
